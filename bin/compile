@@ -23,7 +23,7 @@ if [ -f $ENV_DIR/PROJECT_PATH ]; then
 
         if [ -d $BUILD_DIR/$PROJECT_PATH_CLIENT ]; then
             echo "       moving working dir: $PROJECT_PATH to $TMP_DIR"
-            cp -R $BUILD_DIR/$PROJECT_PATH_CLIENT/. $TMP_DIR/
+            cp -R $BUILD_DIR/$PROJECT_PATH_CLIENT $TMP_DIR/
         fi
 
 	 	echo "       cleaning build dir $BUILD_DIR"
@@ -38,7 +38,3 @@ fi
 
 echo "PROJECT_PATH is undefined"
 exit 1
-
-
-© 2021 GitHub, Inc.
-Terms
