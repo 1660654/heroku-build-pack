@@ -48,47 +48,45 @@ if [ -f $ENV_DIR/PROJECT_PATH ]; then
 		cp -R $TMP_DIR/. $BUILD_DIR/
 		echo "       cleaning tmp dir $TMP_DIR"
 		rm -rf $TMP_DIR
-		exit 0
-	fi
 
-	# Use architecture of multi-buildpack to compose behavior.
-	# https://github.com/heroku/heroku-buildpack-multi
-	cp $BP_DIR/.buildpacks $BUILD_DIR_CLIENT/.buildpacks
-	url=https://github.com/heroku/heroku-buildpack-multi.git
-	branch=""
-	dir=$(mktemp -t buildpackXXXXX)
-	rm -rf $dir
+		# Use architecture of multi-buildpack to compose behavior.
+		# https://github.com/heroku/heroku-buildpack-multi
+		cp $BP_DIR/.buildpacks $BUILD_DIR_CLIENT/.buildpacks
+		url=https://github.com/heroku/heroku-buildpack-multi.git
+		branch=""
+		dir=$(mktemp -t buildpackXXXXX)
+		rm -rf $dir
 
-	echo "=====> Downloading Buildpack: $url"
+		echo "=====> Downloading Buildpack: $url"
 
-	if [[ "$url" =~ \.tgz$ ]] || [[ "$url" =~ \.tgz\? ]]; then
-	mkdir -p "$dir"
-	curl -s "$url" | tar xvz -C "$dir" >/dev/null 2>&1
-	else
-	git clone $url $dir >/dev/null 2>&1
-	fi
-	cd $dir
+		if [[ "$url" =~ \.tgz$ ]] || [[ "$url" =~ \.tgz\? ]]; then
+		mkdir -p "$dir"
+		curl -s "$url" | tar xvz -C "$dir" >/dev/null 2>&1
+		else
+		git clone $url $dir >/dev/null 2>&1
+		fi
+		cd $dir
 
-	if [ "$branch" != "" ]; then
-	git checkout $branch >/dev/null 2>&1
-	fi
+		if [ "$branch" != "" ]; then
+		git checkout $branch >/dev/null 2>&1
+		fi
 
-	chmod -f +x $dir/bin/{detect,compile,release}
+		chmod -f +x $dir/bin/{detect,compile,release}
 
-	framework=$($dir/bin/detect $1)
+		framework=$($dir/bin/detect $1)
 
-	if [ $? == 0 ]; then
-	echo "=====> Detected Framework: $framework"
-	$dir/bin/compile $BUILD_DIR_CLIENT $CACHE_DIR_CLIENT $ENV_DIR_CLIENT
+		if [ $? == 0 ]; then
+		echo "=====> Detected Framework: $framework"
+		$dir/bin/compile $BUILD_DIR_CLIENT $CACHE_DIR_CLIENT $ENV_DIR_CLIENT
 
-	if [ $? != 0 ]; then
+		if [ $? != 0 ]; then
+			exit 1
+		fi
+		else
+		echo "create-react-app `.buildpacks` not defined. Exiting."
 		exit 1
+		fi
 	fi
-	else
-	echo "create-react-app `.buildpacks` not defined. Exiting."
-	exit 1
-	fi
-
 fi
 
 echo "PROJECT_PATH is undefined"
