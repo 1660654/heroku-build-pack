@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 # bin/compile <build-dir> <cache-dir> <env-dir>
 
+# Switch to new Node auto build behavior ahead of release
+# Fail immediately on non-zero exit code.
+set -e
+# Fail immediately on non-zero exit code within a pipeline.
+set -o pipefail
+# Fail on undeclared variables.
+set -u
+# Debug, echo every command
+#set -x
+
 # Ensure wildcards in globs match dotfiles too.
 shopt -s dotglob
 
@@ -11,17 +21,6 @@ BUILD_DIR_CLIENT=$1
 CACHE_DIR_CLIENT=$2
 ENV_DIR_CLIENT=$3
 BP_DIR=`cd $(dirname $0); cd ..; pwd`
-
-# Switch to new Node auto build behavior ahead of release
-export NEW_BUILD_SCRIPT_BEHAVIOR=true
-# Fail immediately on non-zero exit code.
-set -e
-# Fail immediately on non-zero exit code within a pipeline.
-set -o pipefail
-# Fail on undeclared variables.
-set -u
-# Debug, echo every command
-#set -x
 
 function indent() {
 c='s/^/       /'
@@ -48,6 +47,9 @@ if [ -f $ENV_DIR/PROJECT_PATH ]; then
 		cp -R $TMP_DIR/. $BUILD_DIR/
 		echo "       cleaning tmp dir $TMP_DIR"
 		rm -rf $TMP_DIR
+		
+		# Switch to new Node auto build behavior ahead of release
+		export NEW_BUILD_SCRIPT_BEHAVIOR=true
 
 		# Use architecture of multi-buildpack to compose behavior.
 		# https://github.com/heroku/heroku-buildpack-multi
@@ -78,16 +80,17 @@ if [ -f $ENV_DIR/PROJECT_PATH ]; then
 		if [ $? == 0 ]; then
 		echo "=====> Detected Framework: $framework"
 		$dir/bin/compile $BUILD_DIR_CLIENT $CACHE_DIR_CLIENT $ENV_DIR_CLIENT
-
+		echo "OK"
 		if [ $? != 0 ]; then
 			exit 1
 		fi
 		else
-		echo "create-react-app `.buildpacks` not defined. Exiting."
-		exit 1
-		fi
+			echo "create-react-app `.buildpacks` not defined. Exiting."
+			exit 1
+		fi	
+		echo "OK 1"	
 	fi
+else
+	echo "PROJECT_PATH is undefined"
+	exit 1
 fi
-
-echo "PROJECT_PATH is undefined"
-exit 1
