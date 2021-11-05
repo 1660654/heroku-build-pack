@@ -7,7 +7,13 @@ shopt -s dotglob
 BUILD_DIR=${1:-}
 CACHE_DIR=${2:-}
 ENV_DIR=${3:-}
+BUILD_DIR_CLIENT=$1
+CACHE_DIR_CLIENT=$2
+ENV_DIR_CLIENT=$3
+BP_DIR=`cd $(dirname $0); cd ..; pwd`
 
+# Switch to new Node auto build behavior ahead of release
+export NEW_BUILD_SCRIPT_BEHAVIOR=true
 # Fail immediately on non-zero exit code.
 set -e
 # Fail immediately on non-zero exit code within a pipeline.
@@ -44,14 +50,6 @@ if [ -f $ENV_DIR/PROJECT_PATH ]; then
 		rm -rf $TMP_DIR
 		exit 0
 	fi
-
-	BUILD_DIR_CLIENT=$1
-	CACHE_DIR_CLIENT=$2
-	ENV_DIR_CLIENT=$3
-	BP_DIR=`cd $(dirname $0); cd ..; pwd`
-
-	# Switch to new Node auto build behavior ahead of release
-	export NEW_BUILD_SCRIPT_BEHAVIOR=true
 
 	# Use architecture of multi-buildpack to compose behavior.
 	# https://github.com/heroku/heroku-buildpack-multi
